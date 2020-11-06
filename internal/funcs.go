@@ -5,7 +5,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/knq/snaker"
+	"github.com/kenshaw/snaker"
 
 	"github.com/xo/xo/models"
 )
@@ -200,10 +200,13 @@ func (a *ArgType) colnames(fields []*Field, ignoreNames ...string) string {
 // Used to present a comma separated list of column names, that can be used in
 // a SELECT, or UPDATE, or other SQL clause requiring an list of identifiers
 // (ie, "field_1, field_2, field_3, ...").
-func (a *ArgType) colnamesmulti(fields []*Field, ignoreNames []*Field) string {
+func (a *ArgType) colnamesmulti(fields []*Field, ignoreFields []*Field, ignoreNames ...string) string {
 	ignore := map[string]bool{}
-	for _, f := range ignoreNames {
+	for _, f := range ignoreFields {
 		ignore[f.Name] = true
+	}
+	for _, n := range ignoreNames {
+		ignore[n] = true
 	}
 
 	str := ""
@@ -258,10 +261,13 @@ func (a *ArgType) colnamesquery(fields []*Field, sep string, ignoreNames ...stri
 // Used to create a list of column names in a WHERE clause (ie, "field_1 = $1
 // AND field_2 = $2 AND ...") or in an UPDATE clause (ie, "field = $1, field =
 // $2, ...").
-func (a *ArgType) colnamesquerymulti(fields []*Field, sep string, startCount int, ignoreNames []*Field) string {
+func (a *ArgType) colnamesquerymulti(fields []*Field, sep string, startCount int, ignoreFields []*Field, ignoreNames ...string) string {
 	ignore := map[string]bool{}
-	for _, f := range ignoreNames {
+	for _, f := range ignoreFields {
 		ignore[f.Name] = true
+	}
+	for _, n := range ignoreNames {
+		ignore[n] = true
 	}
 
 	str := ""
@@ -398,10 +404,13 @@ func (a *ArgType) fieldnames(fields []*Field, prefix string, ignoreNames ...stri
 //
 // Used to present a comma separated list of field names, ie in a Go statement
 // (ie, "t.Field1, t.Field2, t.Field3 ...")
-func (a *ArgType) fieldnamesmulti(fields []*Field, prefix string, ignoreNames []*Field) string {
+func (a *ArgType) fieldnamesmulti(fields []*Field, prefix string, ignoreFields []*Field, ignoreNames ...string) string {
 	ignore := map[string]bool{}
-	for _, f := range ignoreNames {
+	for _, f := range ignoreFields {
 		ignore[f.Name] = true
+	}
+	for _, n := range ignoreNames {
+		ignore[n] = true
 	}
 
 	str := ""

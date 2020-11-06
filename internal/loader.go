@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/gedex/inflector"
-	"github.com/knq/snaker"
+	"github.com/kenshaw/snaker"
 
 	"github.com/xo/xo/models"
 )
@@ -720,21 +720,51 @@ func (tl TypeLoader) LoadTableIndexes(args *ArgType, typeTpl *Type, ixMap map[st
 		}
 	}
 
-	// if no primary key index loaded, but a primary key column was defined in
-	// the type, then create the definition here. this is needed for sqlite, as
-	// sqlite doesn't define primary keys in its index list
-	if args.LoaderType != "ora" && !priIxLoaded && pk != nil {
-		ixName := typeTpl.Table.TableName + "_" + pk.Col.ColumnName + "_pkey"
-		ixMap[ixName] = &Index{
-			FuncName: typeTpl.Name + "By" + pk.Name,
-			Schema:   args.Schema,
-			Type:     typeTpl,
-			Fields:   []*Field{pk},
-			Index: &models.Index{
-				IndexName: ixName,
-				IsUnique:  true,
-				IsPrimary: true,
-			},
+	if len(typeTpl.PrimaryKeyFields) > 1 {
+		funcName := typeTpl.Name + "By"
+
+		// add param names
+		paramNames := []string{}
+		colnames := []string{}
+		for _, f := range typeTpl.PrimaryKeyFields {
+			paramNames = append(paramNames, f.Name)
+			colnames = append(colnames, f.Col.ColumnName)
+		}
+
+		// store resulting name back
+		funcName = funcName + strings.Join(paramNames, "")
+		if args.LoaderType != "ora" && !priIxLoaded && pk != nil {
+			ixName := typeTpl.Table.TableName + "_" + strings.Join(colnames, "_") + "_pkey"
+			ixMap[ixName] = &Index{
+				FuncName: funcName,
+				Schema:   args.Schema,
+				Type:     typeTpl,
+				Fields:   typeTpl.PrimaryKeyFields,
+				Index: &models.Index{
+					IndexName: ixName,
+					IsUnique:  true,
+					IsPrimary: true,
+				},
+			}
+		}
+
+	} else {
+		// if no primary key index loaded, but a primary key column was defined in
+		// the type, then create the definition here. this is needed for sqlite, as
+		// sqlite doesn't define primary keys in its index list
+		if args.LoaderType != "ora" && !priIxLoaded && pk != nil {
+			ixName := typeTpl.Table.TableName + "_" + pk.Col.ColumnName + "_pkey"
+			ixMap[ixName] = &Index{
+				FuncName: typeTpl.Name + "By" + pk.Name,
+				Schema:   args.Schema,
+				Type:     typeTpl,
+				Fields:   []*Field{pk},
+				Index: &models.Index{
+					IndexName: ixName,
+					IsUnique:  true,
+					IsPrimary: true,
+				},
+			}
 		}
 	}
 

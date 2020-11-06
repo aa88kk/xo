@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/gedex/inflector"
-	"github.com/knq/snaker"
+	"github.com/kenshaw/snaker"
 )
 
 // ParseQuery takes the query in args and looks for strings in the form of
@@ -163,6 +163,7 @@ func (a *ArgType) BuildIndexFuncName(ixTpl *Index) {
 	if !ixTpl.Index.IsUnique {
 		funcName = inflector.Pluralize(ixTpl.Type.Name)
 	}
+
 	funcName = funcName + "By"
 
 	// add param names
